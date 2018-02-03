@@ -1,4 +1,5 @@
 package com.alexitc.coinalerts.data
+
 import com.alexitc.coinalerts.commons.ApplicationResult
 import com.alexitc.coinalerts.errors.RepeatedExchangeCurrencyError
 import com.alexitc.coinalerts.models._
@@ -11,18 +12,17 @@ trait ExchangeCurrencyInMemoryDataHandler extends ExchangeCurrencyBlockingDataHa
   private val currencyList = new mutable.ListBuffer[ExchangeCurrency]()
 
   override def create(
-      exchange: Exchange,
-      market: Market,
-      currency: Currency): ApplicationResult[ExchangeCurrency] = currencyList.synchronized {
+      createModel: CreateExchangeCurrencyModel): ApplicationResult[ExchangeCurrency] = currencyList.synchronized {
 
-    if (getBy(exchange, market, currency).get.isDefined) {
+    if (getBy(createModel.exchange, createModel.market, createModel.currency).get.isDefined) {
       Bad(RepeatedExchangeCurrencyError).accumulating
     } else {
       val newCurrency = ExchangeCurrency(
         ExchangeCurrencyId(currencyList.length),
-        exchange,
-        market,
-        currency)
+        createModel.exchange,
+        createModel.market,
+        createModel.currency,
+        createModel.currencyName)
 
       currencyList += newCurrency
 
